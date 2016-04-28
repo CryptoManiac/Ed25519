@@ -105,7 +105,7 @@ namespace Chaos.NaCl.Benchmark
                 Console.WriteLine();
             }
 
-            foreach (var size in new[] { 1, 128 * 1024 })
+            foreach (var size in new[] { 144, 1000, 2048 })
             {
                 Console.ForegroundColor = ConsoleColor.Yellow;
                 Console.WriteLine("=== Symmetric ({0}) ===", SizeToString(size));
@@ -125,9 +125,9 @@ namespace Chaos.NaCl.Benchmark
         private static string SizeToString(int size)
         {
             if (size > 2048)
-                return String.Format("{0} KiB", size / 1024);
+                return string.Format("{0} KiB", size / 1024);
             else
-                return String.Format("{0} B", size);
+                return string.Format("{0} B", size);
         }
     }
 }
