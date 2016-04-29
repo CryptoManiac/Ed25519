@@ -21,14 +21,11 @@ namespace Chaos.NaCl.Internal.Ed25519Ref10
 			ref FieldElement p)
 		{
 			byte[] e = new byte[32];//ToDo: remove allocation
-            uint i;
 			FieldElement x1, x2, x3;
 			FieldElement z2, z3;
 			FieldElement tmp0, tmp1;
-			int pos;
-            uint swap, b;
 
-			for (i = 0; i < 32; ++i)
+			for (int i = 0; i < 32; ++i)
 				e[i] = n[noffset + i];
 		    ScalarOperations.sc_clamp(e, 0);
 			x1 = p;
@@ -37,10 +34,10 @@ namespace Chaos.NaCl.Internal.Ed25519Ref10
 			x3 = x1;
 			FieldOperations.fe_1(out z3);
 
-			swap = 0;
-			for (pos = 254; pos >= 0; --pos)
+			uint swap = 0;
+			for (int pos = 254; pos >= 0; --pos)
 			{
-				b = (uint)(e[pos / 8] >> (pos & 7));
+				uint b = (uint)(e[pos / 8] >> (pos & 7));
 				b &= 1;
 				swap ^= b;
 				FieldOperations.fe_cswap(ref x2, ref x3, swap);

@@ -64,11 +64,8 @@ namespace Chaos.NaCl
         {
             Contract.Requires<ArgumentNullException>(x != null && y != null);
             Contract.Requires<ArgumentOutOfRangeException>(xOffset >= 0 && yOffset >= 0 && length >= 0);
-
-            if (x.Length - xOffset < length)
-                throw new ArgumentException("xOffset + length > x.Length");
-            if (y.Length - yOffset < length)
-                throw new ArgumentException("yOffset + length > y.Length");
+            Contract.Requires<ArgumentException>(xOffset + length <= x.Length);
+            Contract.Requires<ArgumentException>(yOffset + length <= y.Length);
 
             return InternalConstantTimeEquals(x, xOffset, y, yOffset, length) != 0;
         }
@@ -96,15 +93,14 @@ namespace Chaos.NaCl
         /// </summary>
         /// <param name="data">Byte array</param>
         /// <param name="offset">Index of byte sequence</param>
-        /// <param name="count">Length of byte sequence</param>
-        public static void Wipe(byte[] data, int offset, int count)
+        /// <param name="length">Length of byte sequence</param>
+        public static void Wipe(byte[] data, int offset, int length)
         {
             Contract.Requires<ArgumentNullException>(data != null);
-            Contract.Requires<ArgumentOutOfRangeException>(offset >= 0 && count >= 0);
+            Contract.Requires<ArgumentOutOfRangeException>(offset >= 0 && length >= 0);
+            Contract.Requires<ArgumentException>(offset + length <= data.Length);
 
-            if ((uint)offset + (uint)count > (uint)data.Length)
-                throw new ArgumentException("Requires offset + count <= data.Length");
-            InternalWipe(data, offset, count);
+            InternalWipe(data, offset, length);
         }
 
         /// <summary>
@@ -113,7 +109,6 @@ namespace Chaos.NaCl
         /// <param name="data">Byte array segment</param>
         public static void Wipe(ArraySegment<byte> data)
         {
-            Contract.Ensures(data.Array != null);
             InternalWipe(data.Array, data.Offset, data.Count);
         }
 

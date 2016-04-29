@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Chaos.NaCl.Internal;
+using System.Diagnostics.Contracts;
 
 namespace Chaos.NaCl
 {
@@ -12,49 +13,58 @@ namespace Chaos.NaCl
         public const int BlockSize = 128;
         private static readonly byte[] _padding = new byte[] { 0x80 };
 
+        /// <summary>
+        /// Allocation and initialization of the new SHA-512 object.
+        /// </summary>
         public Sha512()
         {
             _buffer = new byte[BlockSize];//todo: remove allocation
             Init();
         }
 
+        /// <summary>
+        /// Performs an initialization of internal SHA-512 state.
+        /// </summary>
         public void Init()
         {
             Sha512Internal.Sha512Init(out _state);
             _totalBytes = 0;
         }
 
+        /// <summary>
+        /// Updates internal state with data from the provided array segment.
+        /// </summary>
+        /// <param name="data">Array segment</param>
         public void Update(ArraySegment<byte> data)
         {
-            if (data.Array == null)
-                throw new ArgumentNullException("data.Array");
             Update(data.Array, data.Offset, data.Count);
         }
 
-        public void Update(byte[] data, int offset, int count)
+        /// <summary>
+        /// Updates internal state with data from the provided array.
+        /// </summary>
+        /// <param name="data">Array of bytes</param>
+        /// <param name="index">Offset of byte sequence</param>
+        /// <param name="length">Sequence length</param>
+        public void Update(byte[] data, int index, int length)
         {
-            if (data == null)
-                throw new ArgumentNullException("data");
-            if (offset < 0)
-                throw new ArgumentOutOfRangeException("offset");
-            if (count < 0)
-                throw new ArgumentOutOfRangeException("count");
-            if (data.Length - offset < count)
-                throw new ArgumentException("Requires offset + count <= data.Length");
+            Contract.Requires<ArgumentNullException>(data != null);
+            Contract.Requires<ArgumentOutOfRangeException>(index >=0 && length >= 0);
+            Contract.Requires<ArgumentException>((index + length) <= data.Length);
 
             Array16<ulong> block;
             int bytesInBuffer = (int)_totalBytes & (BlockSize - 1);
-            _totalBytes += (uint)count;
+            _totalBytes += (uint)length;
 
             if (_totalBytes >= ulong.MaxValue / 8)
                 throw new InvalidOperationException("Too much data");
             // Fill existing buffer
             if (bytesInBuffer != 0)
             {
-                var toCopy = Math.Min(BlockSize - bytesInBuffer, count);
-                Buffer.BlockCopy(data, offset, _buffer, bytesInBuffer, toCopy);
-                offset += toCopy;
-                count -= toCopy;
+                var toCopy = Math.Min(BlockSize - bytesInBuffer, length);
+                Buffer.BlockCopy(data, index, _buffer, bytesInBuffer, toCopy);
+                index += toCopy;
+                length -= toCopy;
                 bytesInBuffer += toCopy;
                 if (bytesInBuffer == BlockSize)
                 {
@@ -65,26 +75,28 @@ namespace Chaos.NaCl
                 }
             }
             // Hash complete blocks without copying
-            while (count >= BlockSize)
+            while (length >= BlockSize)
             {
-                ByteIntegerConverter.Array16LoadBigEndian64(out block, data, offset);
+                ByteIntegerConverter.Array16LoadBigEndian64(out block, data, index);
                 Sha512Internal.Core(out _state, ref _state, ref block);
-                offset += BlockSize;
-                count -= BlockSize;
+                index += BlockSize;
+                length -= BlockSize;
             }
             // Copy remainder into buffer
-            if (count > 0)
+            if (length > 0)
             {
-                Buffer.BlockCopy(data, offset, _buffer, bytesInBuffer, count);
+                Buffer.BlockCopy(data, index, _buffer, bytesInBuffer, length);
             }
         }
 
-        public void Finish(ArraySegment<byte> output)
+        /// <summary>
+        /// Finalizes SHA-512 hashing
+        /// </summary>
+        /// <param name="output">Output buffer</param>
+        public void Finalize(ArraySegment<byte> output)
         {
-            if (output.Array == null)
-                throw new ArgumentNullException("output.Array");
-            if (output.Count != 64)
-                throw new ArgumentException("output.Count must be 64");
+            Contract.Requires<ArgumentNullException>(output.Array != null);
+            Contract.Requires<ArgumentException>(output.Count == 64);
 
             Update(_padding, 0, _padding.Length);
             Array16<ulong> block;
@@ -110,23 +122,44 @@ namespace Chaos.NaCl
             _state = default(Array8<ulong>);
         }
 
-        public byte[] Finish()
+        /// <summary>
+        /// Finalizes SHA-512 hashing.
+        /// </summary>
+        /// <returns>Hash bytes</returns>
+        public byte[] Finalize()
         {
             var result = new byte[64];
-            Finish(new ArraySegment<byte>(result));
+            Finalize(new ArraySegment<byte>(result));
             return result;
         }
 
+        /// <summary>
+        /// Calculates SHA-512 hash value for the given bytes array.
+        /// </summary>
+        /// <param name="data">Data bytes array</param>
+        /// <returns>Hash bytes</returns>
         public static byte[] Hash(byte[] data)
         {
+            Contract.Requires<ArgumentNullException>(data != null);
             return Hash(data, 0, data.Length);
         }
 
-        public static byte[] Hash(byte[] data, int offset, int count)
+        /// <summary>
+        /// Calculates SHA-512 hash value for the given bytes array.
+        /// </summary>
+        /// <param name="data">Data bytes array</param>
+        /// <param name="index">Offset of byte sequence</param>
+        /// <param name="length">Sequence length</param>
+        /// <returns>Hash bytes</returns>
+        public static byte[] Hash(byte[] data, int index, int length)
         {
+            Contract.Requires<ArgumentNullException>(data != null);
+            Contract.Requires<ArgumentOutOfRangeException>(index >= 0 && length >= 0);
+            Contract.Requires<ArgumentException>((index + length) <= data.Length);
+
             var hasher = new Sha512();
-            hasher.Update(data, offset, count);
-            return hasher.Finish();
+            hasher.Update(data, index, length);
+            return hasher.Finalize();
         }
     }
 }

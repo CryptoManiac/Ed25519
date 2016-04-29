@@ -7,11 +7,11 @@ It is based on the 255 bit elliptic curve Curve25519 using Edwards coordinates.
 Data structures
 ---------------
 
-* *Public Keys* are 32 byte values. All possible values of this size a valid.
-* *Private Keys* take two forms:
+* *Public Keys* are 32 byte values. Any possible value of this size represents a valid public key.
+* *Private Keys* can be represented in two forms:
 
     * A 32 byte seeds which allow arbitrary values. This is the form that should be generated and stored.
-    * A 64 byte expanded form. This forms is used internally to improve performance
+    * A 64 byte expanded form. This form is used internally to improve performance
 
 * *Signatures* are 64 byte values
 

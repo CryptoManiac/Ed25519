@@ -14,13 +14,13 @@ namespace Chaos.NaCl.Internal.Ed25519Ref10
 		    var hasher = new Sha512();
 			{
                 hasher.Update(sk, skoffset, 32);
-			    az = hasher.Finish();
+			    az = hasher.Finalize();
 			    ScalarOperations.sc_clamp(az, 0);
 
 			    hasher.Init();
 				hasher.Update(az, 32, 32);
 				hasher.Update(m, moffset, mlen);
-				r = hasher.Finish();
+				r = hasher.Finalize();
 
 				ScalarOperations.sc_reduce(r);
 				GroupOperations.ge_scalarmult_base(out R, r, 0);
@@ -30,7 +30,7 @@ namespace Chaos.NaCl.Internal.Ed25519Ref10
 				hasher.Update(sig, sigoffset, 32);
 				hasher.Update(sk, skoffset + 32, 32);
 				hasher.Update(m, moffset, mlen);
-				hram = hasher.Finish();
+				hram = hasher.Finalize();
 
 				ScalarOperations.sc_reduce(hram);
 				var s = new byte[32];//todo: remove allocation
