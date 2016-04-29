@@ -194,6 +194,13 @@ namespace Chaos.NaCl.Tests
         }
 
         [TestMethod]
+        [ExpectedException(typeof(FormatException))]
+        public void DecodeInvalidChar()
+        {
+            CryptoBytes.Base58Decode("ab0");
+        }
+
+        [TestMethod]
         public void Wipe()
         {
             var bytes = (byte[])_bytes.Clone();
