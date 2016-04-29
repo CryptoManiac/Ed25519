@@ -81,10 +81,9 @@ to destroy cryptographic secrets that are no longer required.
 Complicating factors like swap files, crash dumps and the moving garbage collector
 reduce the reliability of this function.
 
-    public static bool ContantTimeEquals(byte[] x, byte[] y)
+    public static bool ConstantTimeEquals(byte[] x, byte[] y)
 
-Checks if the contents of the two arrays are the same and returns `truie` if they are equal.  
-Throws an expection if their lengthes differ.
+Checks if the contents of the two arrays are the same and returns `true` if they are equal.  
 
 The runtime of this method does not depend on the contents of the arrays. Using constant time
 prevents timing attacks that allow an attacker to learn if the arrays have a common prefix.
