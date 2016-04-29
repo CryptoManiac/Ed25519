@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Diagnostics.Contracts;
 
@@ -221,6 +223,74 @@ namespace Chaos.NaCl
             if (base64String == null)
                 return null;
             return Convert.FromBase64String(base64String);
+        }
+
+        private const string strDigits = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+
+        /// <summary>
+        /// Encode a byte sequence as a base58-encoded string
+        /// </summary>
+        /// <param name="input">Byte sequence</param>
+        /// <returns>Encoding result</returns>
+        public static string Base58Encode(byte[] input)
+        {
+            Contract.Requires<ArgumentNullException>(input != null);
+            Contract.Ensures(Contract.Result<string>() != null);
+
+            // Decode byte[] to BigInteger
+            BigInteger intData = 0;
+            for (int i = 0; i < input.Length; i++)
+            {
+                intData = intData * 256 + input[i];
+            }
+
+            // Encode BigInteger to Base58 string
+            string result = "";
+            while (intData > 0)
+            {
+                int remainder = (int)(intData % 58);
+                intData /= 58;
+                result = strDigits[remainder] + result;
+            }
+
+            // Append `1` for each leading 0 byte
+            for (int i = 0; i < input.Length && input[i] == 0; i++)
+            {
+                result = '1' + result;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// // Decode a base58-encoded string into byte array
+        /// </summary>
+        /// <param name="strBase58">Base58 data string</param>
+        /// <returns>Byte array</returns>
+        public static byte[] Base58Decode(string input)
+        {
+            Contract.Requires<ArgumentNullException>(input != null);
+            Contract.Ensures(Contract.Result<byte[]>() != null);
+
+            // Decode Base58 string to BigInteger 
+            BigInteger intData = 0;
+            for (int i = 0; i < input.Length; i++)
+            {
+                int digit = strDigits.IndexOf(input[i]); //Slow
+                if (digit < 0)
+                    throw new FormatException(string.Format("Invalid Base58 character `{0}` at position {1}", input[i], i));
+                intData = intData * 58 + digit;
+            }
+
+            // Encode BigInteger to byte[]
+            // Leading zero bytes get encoded as leading `1` characters
+            int leadingZeroCount = input.TakeWhile(c => c == '1').Count();
+            var leadingZeros = Enumerable.Repeat((byte)0, leadingZeroCount);
+            var bytesWithoutLeadingZeros =
+                intData.ToByteArray()
+                .Reverse()// to big endian
+                .SkipWhile(b => b == 0);//strip sign byte
+            var result = leadingZeros.Concat(bytesWithoutLeadingZeros).ToArray();
+            return result;
         }
     }
 }
