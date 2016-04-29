@@ -9,16 +9,16 @@ namespace Chaos.NaCl
         public static bool ConstantTimeEquals(byte[] x, byte[] y)
         {
             Contract.Requires<ArgumentNullException>(x != null && y != null);
-            Contract.Requires<ArgumentException>(x.Length == y.Length);
-
+            if (x.Length != y.Length)
+                return false;
             return InternalConstantTimeEquals(x, 0, y, 0, x.Length) != 0;
         }
 
         public static bool ConstantTimeEquals(ArraySegment<byte> x, ArraySegment<byte> y)
         {
             Contract.Requires<ArgumentNullException>(x.Array != null && y.Array != null);
-            Contract.Requires<ArgumentException>(x.Count == y.Count);
-
+            if (x.Count != y.Count)
+                return false;
             return InternalConstantTimeEquals(x.Array, x.Offset, y.Array, y.Offset, x.Count) != 0;
         }
 

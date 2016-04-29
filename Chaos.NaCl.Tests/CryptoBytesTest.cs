@@ -252,19 +252,17 @@ namespace Chaos.NaCl.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void ConstantTimeEqualsXAndYMustHaveSameLength()
         {
-            CryptoBytes.ConstantTimeEquals(new byte[1], new byte[2]);
+            Assert.IsFalse(CryptoBytes.ConstantTimeEquals(new byte[1], new byte[2]));
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void ConstantTimeEqualsSegmentsMustHaveSameLength()
         {
             var x = new byte[5];
             var y = new byte[5];
-            CryptoBytes.ConstantTimeEquals(new ArraySegment<byte>(x, 0, 4), new ArraySegment<byte>(y, 0, 5));
+            Assert.IsFalse(CryptoBytes.ConstantTimeEquals(new ArraySegment<byte>(x, 0, 4), new ArraySegment<byte>(y, 0, 5)));
         }
 
         [TestMethod]
