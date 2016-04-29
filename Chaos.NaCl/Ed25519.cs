@@ -6,10 +6,10 @@ namespace Chaos.NaCl
 {
     public static class Ed25519
     {
-        public static readonly int PublicKeySize = 32;
-        public static readonly int SignatureSize = 64;
-        public static readonly int ExpandedPrivateKeySize = 32 * 2;
-        public static readonly int PrivateKeySeedSize = 32;
+        public const int PublicKeySize = 32;
+        public const int SignatureSize = 64;
+        public const int ExpandedPrivateKeySize = 32 * 2;
+        public const int PrivateKeySeedSize = 32;
 
         public static bool Verify(ArraySegment<byte> signature, ArraySegment<byte> message, ArraySegment<byte> publicKey)
         {
